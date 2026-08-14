@@ -4,89 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Information & Notification</title>
-
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       font-family: Arial, sans-serif;
       background: #f4f7fb;
-      color: #222;
+      margin: 0;
     }
 
     header {
       background: #1769aa;
       color: white;
       text-align: center;
-      padding: 25px 15px;
-    }
-
-    header h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    nav {
-      background: white;
-      padding: 14px;
-      text-align: center;
-    }
-
-    nav a {
-      color: #1769aa;
-      text-decoration: none;
-      margin: 0 12px;
-      font-weight: bold;
+      padding: 25px;
     }
 
     .container {
       max-width: 900px;
       margin: 25px auto;
-      padding: 0 15px;
-    }
-
-    .box, .notification {
-      background: white;
-      padding: 20px;
-      margin-bottom: 18px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    }
-
-    h2 {
-      color: #1769aa;
-      margin-bottom: 12px;
+      padding: 15px;
     }
 
     .notification {
+      background: white;
+      margin: 15px 0;
+      padding: 20px;
+      border-radius: 10px;
       border-left: 5px solid #1769aa;
     }
 
     .notification h3 {
       color: #1769aa;
-      margin-bottom: 8px;
-    }
-
-    .notification p {
-      line-height: 1.6;
-    }
-
-    #status {
-      text-align: center;
-      padding: 15px;
-      color: #555;
-    }
-
-    footer {
-      margin-top: 40px;
-      background: #222;
-      color: white;
-      text-align: center;
-      padding: 18px;
     }
   </style>
 </head>
@@ -95,111 +42,65 @@
 
 <header>
   <h1>Information & Notification</h1>
-  <p>महत्वपूर्ण सूचना और जानकारी एक ही जगह</p>
+  <p>महत्वपूर्ण सूचना और जानकारी</p>
 </header>
 
-<nav>
-  <a href="#home">Home</a>
-  <a href="#notifications">Notifications</a>
-  <a href="#about">About</a>
-</nav>
-
-<main class="container">
-
-  <section class="box" id="home">
-    <h2>स्वागत है!</h2>
-    <p>
-      इस वेबसाइट पर आपको महत्वपूर्ण सूचनाएँ और नई जानकारी मिलेगी।
-    </p>
-  </section>
-
-  <section id="notifications">
-    <h2>Latest Notifications</h2>
-
-    <div id="status">सूचनाएँ लोड हो रही हैं...</div>
-
-    <div id="notification-list"></div>
-  </section>
-
-  <section class="box" id="about">
-    <h2>About</h2>
-    <p>
-      यह वेबसाइट महत्वपूर्ण जानकारी और notifications लोगों तक पहुँचाने के लिए बनाई गई है।
-    </p>
-  </section>
-
-</main>
-
-<footer>
-  <p>© 2026 Information & Notification</p>
-</footer>
+<div class="container">
+  <h2>Latest Notifications</h2>
+  <div id="notifications">सूचनाएँ लोड हो रही हैं...</div>
+</div>
 
 <script>
-  // यहाँ अपनी Supabase API URL डालें
-  const SUPABASE_URL = https://hduvjoammklsahiornxy.supabase.co";
+const SUPABASE_URL = "https://hduvjoammklsahiornxy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_YJceciJHp6oMFjqTeAW9yQ_cSPRqyKB";
 
-  // यहाँ अपनी Publishable key डालें
-  const SUPABASE_KEY = "sb_publishable_YJceciJHp6oMFjqTeAW9yQ_cSPRqyKB";
+async function loadNotifications() {
+  const box = document.getElementById("notifications");
 
-  async function loadNotifications() {
-    const status = document.getElementById("status");
-    const list = document.getElementById("notification-list");
-
-    try {
-      const response = await fetch(
-        SUPABASE_URL + "/rest/v1/notifications?select=*&order=created_at.desc",
-        {
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": "Bearer " + SUPABASE_KEY
-          }
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/notifications?select=title,description,category,image_url",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
         }
-      );
-
-      if (!response.ok) {
-        throw new Error("Notifications load नहीं हुईं");
       }
+    );
 
-      const notifications = await response.json();
-
-      status.style.display = "none";
-
-      if (notifications.length === 0) {
-        list.innerHTML = `
-          <div class="notification">
-            <h3>अभी कोई नई सूचना नहीं है</h3>
-            <p>नई notifications जल्द यहाँ दिखाई देंगी।</p>
-          </div>
-        `;
-        return;
-      }
-
-      notifications.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "notification";
-
-        div.innerHTML = `
-          <h3>${escapeHtml(item.title || "सूचना")}</h3>
-          <p>${escapeHtml(item.content || "")}</p>
-        `;
-
-        list.appendChild(div);
-      });
-
-    } catch (error) {
-      status.textContent =
-        "सूचनाएँ लोड नहीं हो सकीं। कृपया बाद में फिर प्रयास करें।";
-      console.error(error);
+    if (!response.ok) {
+      throw new Error("Supabase error");
     }
-  }
 
-  function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
+    const data = await response.json();
 
-  loadNotifications();
+    if (data.length === 0) {
+      box.innerHTML = "<p>अभी कोई सूचना उपलब्ध नहीं है।</p>";
+      return;
+    }
+
+    box.innerHTML = "";
+
+    data.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "notification";
+
+      div.innerHTML = `
+        <h3>${item.title || ""}</h3>
+        <p>${item.description || ""}</p>
+        <small>${item.category || ""}</small>
+      `;
+
+      box.appendChild(div);
+    });
+
+  } catch (error) {
+    console.error(error);
+    box.innerHTML = "<p>सूचनाएँ लोड नहीं हो सकीं।</p>";
+  }
+}
+
+loadNotifications();
 </script>
 
 </body>
