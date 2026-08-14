@@ -30,20 +30,15 @@
       margin-bottom: 8px;
     }
 
-    header p {
-      font-size: 15px;
-    }
-
     nav {
       background: white;
-      padding: 12px;
+      padding: 14px;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     nav a {
-      text-decoration: none;
       color: #1769aa;
+      text-decoration: none;
       margin: 0 12px;
       font-weight: bold;
     }
@@ -54,35 +49,36 @@
       padding: 0 15px;
     }
 
-    .welcome {
+    .box, .notification {
       background: white;
-      padding: 22px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 18px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
     }
 
-    .welcome h2 {
+    h2 {
       color: #1769aa;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .notification {
-      background: white;
-      padding: 20px;
-      margin: 15px 0;
       border-left: 5px solid #1769aa;
-      border-radius: 8px;
-      box-shadow: 0 2px 7px rgba(0,0,0,0.08);
     }
 
     .notification h3 {
-      margin-bottom: 8px;
       color: #1769aa;
+      margin-bottom: 8px;
     }
 
     .notification p {
       line-height: 1.6;
+    }
+
+    #status {
+      text-align: center;
+      padding: 15px;
+      color: #555;
     }
 
     footer {
@@ -92,77 +88,119 @@
       text-align: center;
       padding: 18px;
     }
-
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 23px;
-      }
-
-      nav a {
-        margin: 0 6px;
-        font-size: 14px;
-      }
-    }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <h1>Information & Notification</h1>
-    <p>महत्वपूर्ण सूचना और जानकारी एक ही जगह</p>
-  </header>
+<header>
+  <h1>Information & Notification</h1>
+  <p>महत्वपूर्ण सूचना और जानकारी एक ही जगह</p>
+</header>
 
-  <nav>
-    <a href="#home">Home</a>
-    <a href="#notifications">Notifications</a>
-    <a href="#about">About</a>
-  </nav>
+<nav>
+  <a href="#home">Home</a>
+  <a href="#notifications">Notifications</a>
+  <a href="#about">About</a>
+</nav>
 
-  <main class="container">
+<main class="container">
 
-    <section class="welcome" id="home">
-      <h2>स्वागत है!</h2>
-      <p>
-        इस वेबसाइट पर आपको महत्वपूर्ण सूचनाएँ, घोषणाएँ
-        और नई जानकारी आसानी से मिलेगी।
-      </p>
-    </section>
+  <section class="box" id="home">
+    <h2>स्वागत है!</h2>
+    <p>
+      इस वेबसाइट पर आपको महत्वपूर्ण सूचनाएँ और नई जानकारी मिलेगी।
+    </p>
+  </section>
 
-    <section id="notifications">
-      <h2>Latest Notifications</h2>
+  <section id="notifications">
+    <h2>Latest Notifications</h2>
 
-      <div class="notification">
-        <h3>नई सूचना</h3>
-        <p>
-          हमारी Information & Notification वेबसाइट जल्द ही
-          नई सूचनाओं के साथ अपडेट की जाएगी।
-        </p>
-      </div>
+    <div id="status">सूचनाएँ लोड हो रही हैं...</div>
 
-      <div class="notification">
-        <h3>महत्वपूर्ण जानकारी</h3>
-        <p>
-          नई जानकारी और घोषणाओं के लिए इस वेबसाइट को
-          समय-समय पर देखते रहें।
-        </p>
-      </div>
+    <div id="notification-list"></div>
+  </section>
 
-    </section>
+  <section class="box" id="about">
+    <h2>About</h2>
+    <p>
+      यह वेबसाइट महत्वपूर्ण जानकारी और notifications लोगों तक पहुँचाने के लिए बनाई गई है।
+    </p>
+  </section>
 
-    <section class="welcome" id="about">
-      <h2>About</h2>
-      <p>
-        यह वेबसाइट लोगों तक महत्वपूर्ण जानकारी और
-        notifications पहुँचाने के लिए बनाई गई है।
-      </p>
-    </section>
+</main>
 
-  </main>
+<footer>
+  <p>© 2026 Information & Notification</p>
+</footer>
 
-  <footer>
-    <p>© 2026 Information & Notification</p>
-  </footer>
+<script>
+  // यहाँ अपनी Supabase API URL डालें
+  const SUPABASE_URL = https://hduvjoammklsahiornxy.supabase.co";
+
+  // यहाँ अपनी Publishable key डालें
+  const SUPABASE_KEY = "sb_publishable_YJceciJHp6oMFjqTeAW9yQ_cSPRqyKB";
+
+  async function loadNotifications() {
+    const status = document.getElementById("status");
+    const list = document.getElementById("notification-list");
+
+    try {
+      const response = await fetch(
+        SUPABASE_URL + "/rest/v1/notifications?select=*&order=created_at.desc",
+        {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Notifications load नहीं हुईं");
+      }
+
+      const notifications = await response.json();
+
+      status.style.display = "none";
+
+      if (notifications.length === 0) {
+        list.innerHTML = `
+          <div class="notification">
+            <h3>अभी कोई नई सूचना नहीं है</h3>
+            <p>नई notifications जल्द यहाँ दिखाई देंगी।</p>
+          </div>
+        `;
+        return;
+      }
+
+      notifications.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "notification";
+
+        div.innerHTML = `
+          <h3>${escapeHtml(item.title || "सूचना")}</h3>
+          <p>${escapeHtml(item.content || "")}</p>
+        `;
+
+        list.appendChild(div);
+      });
+
+    } catch (error) {
+      status.textContent =
+        "सूचनाएँ लोड नहीं हो सकीं। कृपया बाद में फिर प्रयास करें।";
+      console.error(error);
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  loadNotifications();
+</script>
 
 </body>
 </html>
