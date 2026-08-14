@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Information & Notification</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    header {
+      background: #1769aa;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 15px;
+    }
+
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.1);
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #1769aa;
+      margin-top: 0;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 7px;
+      background: #1769aa;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: .9;
+    }
+
+    .logout {
+      background: #555;
+      margin-top: 10px;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    #adminPanel {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Admin Panel</h1>
+  <p>Information & Notification</p>
+</header>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div class="box" id="loginBox">
+    <h2>Admin Login</h2>
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="Admin email">
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+
+    <div id="loginMessage"></div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div class="box" id="adminPanel">
+
+    <h2>नई सूचना जोड़ें</h2>
+
+    <label>Title</label>
+    <input type="text" id="title" placeholder="सूचना का शीर्षक">
+
+    <label>Description</label>
+    <textarea id="description" placeholder="सूचना लिखें"></textarea>
+
+    <label>Category</label>
+    <select id="category">
+      <option value="Important">Important</option>
+      <option value="Education">Education</option>
+      <option value="Job">Job</option>
+      <option value="News">News</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label>Content</label>
+    <textarea id="content" placeholder="अतिरिक्त जानकारी"></textarea>
+
+    <label>Image URL (optional)</label>
+    <input type="text" id="image_url" placeholder="https://...">
+
+    <button onclick="addNotification()">Publish Notification</button>
+
+    <div id="message"></div>
+
+    <button class="logout" onclick="logout()">Logout</button>
+
+  </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://hduvjoammklsahiornxy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_YJceciJHp6oMFjqTeAW9yQ_cSPRqyKB";
+
+let accessToken = "";
+
+async function login() {
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  const message = document.getElementById("loginMessage");
+
+  if (!email || !password) {
+    message.textContent = "Email और password भरें।";
+    return;
+  }
+
+  message.textContent = "Login हो रहा है...";
+
+  try {
+
+    const response = await fetch(
+      SUPABASE_URL + "/auth/v1/token?grant_type=password",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY
+        },
+
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error_description || "Login failed");
+    }
+
+    accessToken = data.access_token;
+
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("adminPanel").style.display = "block";
+
+  } catch (error) {
+
+    message.textContent = "Login नहीं हुआ: " + error.message;
+
+  }
+}
+
+
+async function addNotification() {
+
+  const title = document.getElementById("title").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const category = document.getElementById("category").value;
+  const content = document.getElementById("content").value.trim();
+  const image_url = document.getElementById("image_url").value.trim();
+
+  const message = document.getElementById("message");
+
+  if (!title || !description) {
+    message.textContent = "Title और Description भरना जरूरी है।";
+    return;
+  }
+
+  message.textContent = "Notification publish हो रही है...";
+
+  try {
+
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/notifications",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + accessToken,
+          "Prefer": "return=minimal"
+        },
+
+        body: JSON.stringify({
+          title: title,
+          description: description,
+          category: category,
+          content: content,
+          image_url: image_url
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(errorData);
+    }
+
+    message.textContent = "✅ Notification successfully publish हो गई!";
+
+    document.getElementById("title").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("content").value = "";
+    document.getElementById("image_url").value = "";
+
+  } catch (error) {
+
+    message.textContent =
+      "❌ Notification publish नहीं हुई। RLS policy की जरूरत हो सकती है।";
+
+    console.error(error);
+  }
+}
+
+
+function logout() {
+
+  accessToken = "";
+
+  document.getElementById("adminPanel").style.display = "none";
+  document.getElementById("loginBox").style.display = "block";
+
+  document.getElementById("email").value = "";
+  document.getElementById("password").value = "";
+}
+
+</script>
+
+</body>
+</html>
