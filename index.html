@@ -177,7 +177,16 @@ async function loadNotifications() {
       `;
 
       box.appendChild(div);
+if (localStorage.getItem("access_token")) {
+  const deleteButton = document.createElement("button");
 
+  deleteButton.innerText = "Delete";
+  deleteButton.style.marginTop = "10px";
+
+  deleteButton.onclick = () => deleteNotification(item.id);
+
+  div.appendChild(deleteButton);
+}
     });
 
   } catch (error) {
@@ -342,6 +351,38 @@ async function addNotification() {
 
 
 loadNotifications();
+  async function deleteNotification(id) {
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    alert("पहले Admin Login करें।");
+    return;
+  }
+
+  if (!confirm("क्या आप यह सूचना delete करना चाहते हैं?")) {
+    return;
+  }
+
+  const response = await fetch(
+    SUPABASE_URL + "/rest/v1/notifications?id=eq." + id,
+    {
+      method: "DELETE",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + token
+      }
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    alert("Delete नहीं हुआ:\n" + error);
+    return;
+  }
+
+  alert("सूचना delete हो गई।");
+  loadNotifications();
+}
 </script>
 
 </body>
