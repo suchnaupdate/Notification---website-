@@ -47,6 +47,35 @@
       margin-bottom: 15px;
     }
 
+    /* SEARCH BOX */
+
+    .search-box {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: #1769aa;
+    }
+
+    #searchMessage {
+      color: #777;
+      margin: 10px 0 0;
+      font-size: 14px;
+    }
+
     .notification {
       background: white;
       margin: 18px 0;
@@ -217,10 +246,29 @@
     Latest Notifications
   </h2>
 
+
+  <!-- SEARCH -->
+
+  <div class="search-box">
+
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="🔎 सूचना खोजें..."
+      oninput="searchNotifications()"
+    >
+
+    <p id="searchMessage"></p>
+
+  </div>
+
+
   <div id="notifications">
+
     <div class="loading">
       सूचनाएँ लोड हो रही हैं...
     </div>
+
   </div>
 
 
@@ -234,7 +282,9 @@
         class="admin-login-button"
         id="loginButton"
         onclick="login()">
+
         🔐 Admin Login
+
       </button>
 
     </div>
@@ -247,7 +297,9 @@
       <button
         class="logout-button"
         onclick="logout()">
+
         Logout
+
       </button>
 
 
@@ -284,7 +336,9 @@
         ></textarea>
 
         <button onclick="addNotification()">
+
           सूचना जोड़ें
+
         </button>
 
         <p id="message"></p>
@@ -305,6 +359,13 @@ const SUPABASE_URL =
 
 const SUPABASE_KEY =
   "sb_publishable_YJceciJHp6oMFjqTeAW9yQ_cSPRqyKB";
+
+
+/* =========================
+   STORE NOTIFICATIONS
+========================= */
+
+let allNotifications = [];
 
 
 /* =========================
@@ -334,7 +395,9 @@ function updateAdminUI() {
     loginBox.style.display = "block";
 
     adminPanel.style.display = "none";
+
   }
+
 }
 
 
@@ -354,17 +417,25 @@ async function loadNotifications() {
   try {
 
     const response = await fetch(
+
       SUPABASE_URL +
       "/rest/v1/notifications?select=*",
+
       {
+
         method: "GET",
 
         headers: {
+
           "apikey": SUPABASE_KEY,
+
           "Authorization":
             "Bearer " + SUPABASE_KEY
+
         }
+
       }
+
     );
 
 
@@ -373,7 +444,9 @@ async function loadNotifications() {
 
 
     if (!response.ok) {
+
       throw new Error(responseText);
+
     }
 
 
@@ -382,168 +455,31 @@ async function loadNotifications() {
 
 
     if (!Array.isArray(data)) {
+
       throw new Error("Invalid data");
+
     }
 
 
-    if (data.length === 0) {
-
-      box.innerHTML =
-        "<p>अभी कोई सूचना उपलब्ध नहीं है।";
-
-      return;
-    }
+    allNotifications = data;
 
 
-    data.sort(function(a, b) {
+    allNotifications.sort(function(a, b) {
 
       return (
+
         new Date(b.published_at || 0) -
+
         new Date(a.published_at || 0)
+
       );
 
     });
 
 
-    box.innerHTML = "";
-
-
-    data.forEach(function(item) {
-
-      const div =
-        document.createElement("div");
-
-      div.className =
-        "notification";
-
-
-      /* TITLE */
-
-      const title =
-        document.createElement("h3");
-
-      title.textContent =
-        item.title || "";
-
-      div.appendChild(title);
-
-
-      /* DESCRIPTION */
-
-      if (item.description) {
-
-        const description =
-          document.createElement("p");
-
-        description.textContent =
-          item.description;
-
-        div.appendChild(description);
-      }
-
-
-      /* CATEGORY */
-
-      if (item.category) {
-
-        const category =
-          document.createElement("span");
-
-        category.className =
-          "category";
-
-        category.textContent =
-          item.category;
-
-        div.appendChild(category);
-      }
-
-
-      /* IMAGE */
-
-      if (item.image_url) {
-
-        const image =
-          document.createElement("img");
-
-        image.src =
-          item.image_url;
-
-        image.alt =
-          "Notification Image";
-
-        div.appendChild(image);
-      }
-
-
-      /* CONTENT */
-
-      if (item.content) {
-
-        const content =
-          document.createElement("p");
-
-        content.textContent =
-          item.content;
-
-        div.appendChild(content);
-      }
-
-
-      /* DATE */
-
-      if (item.published_at) {
-
-        const date =
-          document.createElement("div");
-
-        date.className =
-          "date";
-
-        const d =
-          new Date(item.published_at);
-
-        date.textContent =
-          "📅 " +
-          d.toLocaleString("hi-IN");
-
-        div.appendChild(date);
-      }
-
-
-      /* DELETE - ONLY ADMIN */
-
-      if (
-        localStorage.getItem("access_token")
-      ) {
-
-        const deleteButton =
-          document.createElement("button");
-
-        deleteButton.className =
-          "delete-button";
-
-        deleteButton.textContent =
-          "Delete";
-
-        deleteButton.onclick =
-          function() {
-
-            deleteNotification(
-              item.Id
-            );
-
-          };
-
-        div.appendChild(
-          deleteButton
-        );
-      }
-
-
-      box.appendChild(div);
-
-    });
+    displayNotifications(
+      allNotifications
+    );
 
 
   } catch (error) {
@@ -553,9 +489,281 @@ async function loadNotifications() {
       error
     );
 
+
     box.innerHTML =
       "<p>सूचनाएँ लोड नहीं हो सकीं।</p>";
+
   }
+
+}
+
+
+/* =========================
+   DISPLAY NOTIFICATIONS
+========================= */
+
+function displayNotifications(data) {
+
+  const box =
+    document.getElementById(
+      "notifications"
+    );
+
+
+  const searchMessage =
+    document.getElementById(
+      "searchMessage"
+    );
+
+
+  box.innerHTML = "";
+
+
+  if (data.length === 0) {
+
+    box.innerHTML =
+      "<p>कोई सूचना नहीं मिली।</p>";
+
+    searchMessage.innerText =
+      "इस शब्द से कोई सूचना नहीं मिली।";
+
+    return;
+
+  }
+
+
+  searchMessage.innerText =
+    "";
+
+
+  data.forEach(function(item) {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "notification";
+
+
+    /* TITLE */
+
+    const title =
+      document.createElement("h3");
+
+    title.textContent =
+      item.title || "";
+
+    div.appendChild(title);
+
+
+    /* DESCRIPTION */
+
+    if (item.description) {
+
+      const description =
+        document.createElement("p");
+
+      description.textContent =
+        item.description;
+
+      div.appendChild(description);
+
+    }
+
+
+    /* CATEGORY */
+
+    if (item.category) {
+
+      const category =
+        document.createElement("span");
+
+      category.className =
+        "category";
+
+      category.textContent =
+        item.category;
+
+      div.appendChild(category);
+
+    }
+
+
+    /* IMAGE */
+
+    if (item.image_url) {
+
+      const image =
+        document.createElement("img");
+
+      image.src =
+        item.image_url;
+
+      image.alt =
+        "Notification Image";
+
+      div.appendChild(image);
+
+    }
+
+
+    /* CONTENT */
+
+    if (item.content) {
+
+      const content =
+        document.createElement("p");
+
+      content.textContent =
+        item.content;
+
+      div.appendChild(content);
+
+    }
+
+
+    /* DATE */
+
+    if (item.published_at) {
+
+      const date =
+        document.createElement("div");
+
+      date.className =
+        "date";
+
+      const d =
+        new Date(item.published_at);
+
+      date.textContent =
+        "📅 " +
+        d.toLocaleString("hi-IN");
+
+      div.appendChild(date);
+
+    }
+
+
+    /* DELETE */
+
+    if (
+      localStorage.getItem(
+        "access_token"
+      )
+    ) {
+
+      const deleteButton =
+        document.createElement(
+          "button"
+        );
+
+
+      deleteButton.className =
+        "delete-button";
+
+
+      deleteButton.textContent =
+        "Delete";
+
+
+      deleteButton.onclick =
+        function() {
+
+          deleteNotification(
+            item.Id
+          );
+
+        };
+
+
+      div.appendChild(
+        deleteButton
+      );
+
+    }
+
+
+    box.appendChild(div);
+
+  });
+
+}
+
+
+/* =========================
+   SEARCH
+========================= */
+
+function searchNotifications() {
+
+  const searchInput =
+    document.getElementById(
+      "searchInput"
+    );
+
+
+  const searchText =
+    searchInput.value
+      .trim()
+      .toLowerCase();
+
+
+  if (!searchText) {
+
+    displayNotifications(
+      allNotifications
+    );
+
+    return;
+
+  }
+
+
+  const filtered =
+    allNotifications.filter(
+      function(item) {
+
+        const title =
+          String(
+            item.title || ""
+          ).toLowerCase();
+
+        const description =
+          String(
+            item.description || ""
+          ).toLowerCase();
+
+        const category =
+          String(
+            item.category || ""
+          ).toLowerCase();
+
+        const content =
+          String(
+            item.content || ""
+          ).toLowerCase();
+
+
+        return (
+
+          title.includes(searchText) ||
+
+          description.includes(searchText) ||
+
+          category.includes(searchText) ||
+
+          content.includes(searchText)
+
+        );
+
+      }
+    );
+
+
+  displayNotifications(
+    filtered
+  );
+
 }
 
 
@@ -566,18 +774,28 @@ async function loadNotifications() {
 function login() {
 
   const email =
-    prompt("Admin email डालें:");
+    prompt(
+      "Admin email डालें:"
+    );
+
 
   if (!email) {
+
     return;
+
   }
 
 
   const password =
-    prompt("Password डालें:");
+    prompt(
+      "Password डालें:"
+    );
+
 
   if (!password) {
+
     return;
+
   }
 
 
@@ -585,6 +803,7 @@ function login() {
     email,
     password
   );
+
 }
 
 
@@ -599,24 +818,39 @@ async function authenticate(
 
   try {
 
-    const response = await fetch(
-      SUPABASE_URL +
-      "/auth/v1/token?grant_type=password",
-      {
-        method: "POST",
+    const response =
+      await fetch(
 
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Content-Type":
-            "application/json"
-        },
+        SUPABASE_URL +
+        "/auth/v1/token?grant_type=password",
 
-        body: JSON.stringify({
-          email: email,
-          password: password
-        })
-      }
-    );
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "apikey":
+              SUPABASE_KEY,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body: JSON.stringify({
+
+            email:
+              email,
+
+            password:
+              password
+
+          })
+
+        }
+
+      );
 
 
     const data =
@@ -626,27 +860,41 @@ async function authenticate(
     if (!response.ok) {
 
       alert(
+
         "Login नहीं हुआ: " +
+
         (
+
           data.error_description ||
+
           data.msg ||
+
           "Invalid login"
+
         )
+
       );
 
       return;
+
     }
 
 
     localStorage.setItem(
+
       "access_token",
+
       data.access_token
+
     );
 
 
     localStorage.setItem(
+
       "refresh_token",
+
       data.refresh_token
+
     );
 
 
@@ -658,8 +906,9 @@ async function authenticate(
     );
 
 
-    loadNotifications();
-
+    displayNotifications(
+      allNotifications
+    );
 
   } catch (error) {
 
@@ -668,10 +917,13 @@ async function authenticate(
       error
     );
 
+
     alert(
       "Login में समस्या हुई।"
     );
+
   }
+
 }
 
 
@@ -685,6 +937,7 @@ function logout() {
     "access_token"
   );
 
+
   localStorage.removeItem(
     "refresh_token"
   );
@@ -693,7 +946,10 @@ function logout() {
   updateAdminUI();
 
 
-  loadNotifications();
+  displayNotifications(
+    allNotifications
+  );
+
 }
 
 
@@ -716,6 +972,7 @@ async function addNotification() {
     );
 
     return;
+
   }
 
 
@@ -756,6 +1013,7 @@ async function addNotification() {
     );
 
     return;
+
   }
 
 
@@ -763,9 +1021,12 @@ async function addNotification() {
 
     const response =
       await fetch(
+
         SUPABASE_URL +
         "/rest/v1/notifications",
+
         {
+
           method: "POST",
 
           headers: {
@@ -781,6 +1042,7 @@ async function addNotification() {
 
             "Prefer":
               "return=minimal"
+
           },
 
           body: JSON.stringify({
@@ -804,7 +1066,9 @@ async function addNotification() {
               new Date().toISOString()
 
           })
+
         }
+
       );
 
 
@@ -813,12 +1077,18 @@ async function addNotification() {
       const error =
         await response.text();
 
+
       alert(
+
         "सूचना जोड़ने में समस्या हुई:\n" +
+
         error
+
       );
 
+
       return;
+
     }
 
 
@@ -832,17 +1102,21 @@ async function addNotification() {
       "title"
     ).value = "";
 
+
     document.getElementById(
       "description"
     ).value = "";
+
 
     document.getElementById(
       "category"
     ).value = "";
 
+
     document.getElementById(
       "image_url"
     ).value = "";
+
 
     document.getElementById(
       "content"
@@ -859,10 +1133,13 @@ async function addNotification() {
       error
     );
 
+
     alert(
       "सूचना जोड़ने में समस्या हुई।"
     );
+
   }
+
 }
 
 
@@ -885,6 +1162,7 @@ async function deleteNotification(Id) {
     );
 
     return;
+
   }
 
 
@@ -895,6 +1173,7 @@ async function deleteNotification(Id) {
   ) {
 
     return;
+
   }
 
 
@@ -902,10 +1181,14 @@ async function deleteNotification(Id) {
 
     const response =
       await fetch(
+
         SUPABASE_URL +
         "/rest/v1/notifications?Id=eq." +
+
         encodeURIComponent(Id),
+
         {
+
           method: "DELETE",
 
           headers: {
@@ -915,8 +1198,11 @@ async function deleteNotification(Id) {
 
             "Authorization":
               "Bearer " + token
+
           }
+
         }
+
       );
 
 
@@ -925,12 +1211,18 @@ async function deleteNotification(Id) {
       const error =
         await response.text();
 
+
       alert(
+
         "Delete नहीं हुआ:\n" +
+
         error
+
       );
 
+
       return;
+
     }
 
 
@@ -949,10 +1241,13 @@ async function deleteNotification(Id) {
       error
     );
 
+
     alert(
       "Delete करने में समस्या हुई।"
     );
+
   }
+
 }
 
 
