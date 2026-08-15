@@ -3,20 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Information & Notification</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background: #f4f7fb;
       margin: 0;
+      color: #222;
     }
 
     header {
-      background: #1769aa;
+      background: linear-gradient(135deg, #1769aa, #0d47a1);
       color: white;
       text-align: center;
-      padding: 25px;
+      padding: 30px 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 16px;
     }
 
     .container {
@@ -25,50 +42,84 @@
       padding: 15px;
     }
 
+    .section-title {
+      color: #1769aa;
+      margin-bottom: 15px;
+    }
+
     .notification {
       background: white;
-      margin: 15px 0;
+      margin: 18px 0;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
       border-left: 5px solid #1769aa;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
     }
 
     .notification h3 {
       color: #1769aa;
-      margin-top: 0;
+      margin: 0 0 10px;
+      font-size: 21px;
+    }
+
+    .notification p {
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+
+    .category {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #1769aa;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .date {
+      color: #777;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .notification img {
+      max-width: 100%;
+      margin-top: 12px;
+      border-radius: 8px;
+      display: block;
     }
 
     button {
       background: #1769aa;
       color: white;
       border: 0;
-      padding: 10px 16px;
-      border-radius: 6px;
+      padding: 11px 17px;
+      border-radius: 7px;
       cursor: pointer;
-      margin-top: 5px;
+      font-size: 15px;
     }
 
-    input,
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
-      margin: 7px 0 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+    button:hover {
+      opacity: 0.9;
     }
 
-    textarea {
-      min-height: 100px;
-      resize: vertical;
+    .delete-button {
+      background: #d32f2f;
+      margin-top: 12px;
     }
 
     #adminPanel {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 25px;
+      padding: 22px;
+      border-radius: 12px;
+      margin-top: 30px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    #adminPanel h2 {
+      color: #1769aa;
+      margin-top: 0;
     }
 
     #addForm {
@@ -76,8 +127,54 @@
       margin-top: 20px;
     }
 
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 7px 0 13px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
     #message {
       font-weight: bold;
+    }
+
+    .loading {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+
+      header h1 {
+        font-size: 24px;
+      }
+
+      .container {
+        padding: 10px;
+        margin-top: 15px;
+      }
+
+      .notification {
+        padding: 16px;
+      }
+
+      .notification h3 {
+        font-size: 19px;
+      }
+
+      #adminPanel {
+        padding: 17px;
+      }
     }
   </style>
 </head>
@@ -91,11 +188,16 @@
 
 <div class="container">
 
-  <h2>Latest Notifications</h2>
+  <h2 class="section-title">Latest Notifications</h2>
 
   <div id="notifications">
-    सूचनाएँ लोड हो रही हैं...
+    <div class="loading">
+      सूचनाएँ लोड हो रही हैं...
+    </div>
   </div>
+
+
+  <!-- ADMIN PANEL -->
 
   <div id="adminPanel">
 
@@ -105,9 +207,13 @@
       Admin Login
     </button>
 
-    <button id="logoutButton" onclick="logout()" style="display:none;">
+    <button
+      id="logoutButton"
+      onclick="logout()"
+      style="display:none;">
       Logout
     </button>
+
 
     <div id="addForm">
 
@@ -133,7 +239,7 @@
       <input
         id="image_url"
         type="text"
-        placeholder="Image URL"
+        placeholder="Image URL (optional)"
       >
 
       <textarea
@@ -152,6 +258,7 @@
   </div>
 
 </div>
+
 
 <script>
 
@@ -172,7 +279,7 @@ async function loadNotifications() {
     document.getElementById("notifications");
 
   box.innerHTML =
-    "<p>सूचनाएँ लोड हो रही हैं...</p>";
+    '<div class="loading">सूचनाएँ लोड हो रही हैं...</div>';
 
   try {
 
@@ -193,25 +300,15 @@ async function loadNotifications() {
     const responseText =
       await response.text();
 
-    console.log(
-      "Supabase response:",
-      responseText
-    );
-
     if (!response.ok) {
-      throw new Error(
-        "Supabase Error: " +
-        responseText
-      );
+      throw new Error(responseText);
     }
 
     const data =
       JSON.parse(responseText);
 
     if (!Array.isArray(data)) {
-      throw new Error(
-        "Invalid notification data"
-      );
+      throw new Error("Invalid data");
     }
 
     if (data.length === 0) {
@@ -221,6 +318,7 @@ async function loadNotifications() {
 
       return;
     }
+
 
     /* Latest notification first */
 
@@ -233,7 +331,9 @@ async function loadNotifications() {
 
     });
 
+
     box.innerHTML = "";
+
 
     data.forEach(function(item) {
 
@@ -243,57 +343,90 @@ async function loadNotifications() {
       div.className =
         "notification";
 
-      div.innerHTML = `
 
-        <h3>
-          ${item.title || ""}
-        </h3>
+      const title =
+        document.createElement("h3");
 
-        <p>
-          ${item.description || ""}
-        </p>
+      title.textContent =
+        item.title || "";
 
-        <small>
-          ${item.category || ""}
-        </small>
-
-        ${
-          item.image_url
-          ?
-          `
-          <br>
-          <img
-            src="${item.image_url}"
-            alt="Notification Image"
-            style="
-              max-width:100%;
-              margin-top:10px;
-              border-radius:6px;
-            "
-          >
-          `
-          :
-          ""
-        }
-
-        ${
-          item.content
-          ?
-          `
-          <p>
-            ${item.content}
-          </p>
-          `
-          :
-          ""
-        }
-
-      `;
-
-      box.appendChild(div);
+      div.appendChild(title);
 
 
-      /* Delete button for admin */
+      if (item.description) {
+
+        const description =
+          document.createElement("p");
+
+        description.textContent =
+          item.description;
+
+        div.appendChild(description);
+      }
+
+
+      if (item.category) {
+
+        const category =
+          document.createElement("span");
+
+        category.className =
+          "category";
+
+        category.textContent =
+          item.category;
+
+        div.appendChild(category);
+      }
+
+
+      if (item.image_url) {
+
+        const image =
+          document.createElement("img");
+
+        image.src =
+          item.image_url;
+
+        image.alt =
+          "Notification Image";
+
+        div.appendChild(image);
+      }
+
+
+      if (item.content) {
+
+        const content =
+          document.createElement("p");
+
+        content.textContent =
+          item.content;
+
+        div.appendChild(content);
+      }
+
+
+      if (item.published_at) {
+
+        const date =
+          document.createElement("div");
+
+        date.className =
+          "date";
+
+        const d =
+          new Date(item.published_at);
+
+        date.textContent =
+          "📅 " +
+          d.toLocaleString("hi-IN");
+
+        div.appendChild(date);
+      }
+
+
+      /* DELETE BUTTON */
 
       if (
         localStorage.getItem("access_token")
@@ -302,14 +435,11 @@ async function loadNotifications() {
         const deleteButton =
           document.createElement("button");
 
-        deleteButton.innerText =
+        deleteButton.className =
+          "delete-button";
+
+        deleteButton.textContent =
           "Delete";
-
-        deleteButton.style.background =
-          "#d32f2f";
-
-        deleteButton.style.marginTop =
-          "10px";
 
         deleteButton.onclick =
           function() {
@@ -325,6 +455,9 @@ async function loadNotifications() {
         );
       }
 
+
+      box.appendChild(div);
+
     });
 
   } catch (error) {
@@ -334,20 +467,14 @@ async function loadNotifications() {
       error
     );
 
-    box.innerHTML = `
-      <p>
-        सूचनाएँ लोड नहीं हो सकीं।
-      </p>
-      <small>
-        कृपया थोड़ी देर बाद फिर प्रयास करें।
-      </small>
-    `;
+    box.innerHTML =
+      "<p>सूचनाएँ लोड नहीं हो सकीं।</p>";
   }
 }
 
 
 /* =========================
-   ADMIN LOGIN
+   LOGIN
 ========================= */
 
 function login() {
@@ -406,6 +533,7 @@ async function authenticate(
     const data =
       await response.json();
 
+
     if (!response.ok) {
 
       alert(
@@ -420,6 +548,7 @@ async function authenticate(
       return;
     }
 
+
     localStorage.setItem(
       "access_token",
       data.access_token
@@ -430,30 +559,32 @@ async function authenticate(
       data.refresh_token
     );
 
+
     document.getElementById(
       "loginButton"
     ).style.display = "none";
+
 
     document.getElementById(
       "logoutButton"
     ).style.display = "inline-block";
 
+
     document.getElementById(
       "addForm"
     ).style.display = "block";
+
 
     alert(
       "Admin login सफल हुआ।"
     );
 
+
     loadNotifications();
 
   } catch (error) {
 
-    console.error(
-      "Login error:",
-      error
-    );
+    console.error(error);
 
     alert(
       "Login में समस्या हुई।"
@@ -476,17 +607,24 @@ function logout() {
     "refresh_token"
   );
 
+
   document.getElementById(
     "loginButton"
-  ).style.display = "inline-block";
+  ).style.display =
+    "inline-block";
+
 
   document.getElementById(
     "logoutButton"
-  ).style.display = "none";
+  ).style.display =
+    "none";
+
 
   document.getElementById(
     "addForm"
-  ).style.display = "none";
+  ).style.display =
+    "none";
+
 
   loadNotifications();
 }
@@ -503,6 +641,7 @@ async function addNotification() {
       "access_token"
     );
 
+
   if (!token) {
 
     alert(
@@ -512,25 +651,30 @@ async function addNotification() {
     return;
   }
 
+
   const title =
     document.getElementById(
       "title"
     ).value.trim();
+
 
   const description =
     document.getElementById(
       "description"
     ).value.trim();
 
+
   const category =
     document.getElementById(
       "category"
     ).value.trim();
 
+
   const image_url =
     document.getElementById(
       "image_url"
     ).value.trim();
+
 
   const content =
     document.getElementById(
@@ -558,7 +702,8 @@ async function addNotification() {
           method: "POST",
 
           headers: {
-            "apikey": SUPABASE_KEY,
+            "apikey":
+              SUPABASE_KEY,
 
             "Authorization":
               "Bearer " + token,
@@ -572,7 +717,8 @@ async function addNotification() {
 
           body: JSON.stringify({
 
-            title: title,
+            title:
+              title,
 
             description:
               description,
@@ -598,11 +744,6 @@ async function addNotification() {
 
       const error =
         await response.text();
-
-      console.error(
-        "Add notification error:",
-        error
-      );
 
       alert(
         "सूचना जोड़ने में समस्या हुई:\n" +
@@ -644,10 +785,7 @@ async function addNotification() {
 
   } catch (error) {
 
-    console.error(
-      "Add notification error:",
-      error
-    );
+    console.error(error);
 
     alert(
       "सूचना जोड़ने में समस्या हुई।"
@@ -699,7 +837,8 @@ async function deleteNotification(Id) {
           method: "DELETE",
 
           headers: {
-            "apikey": SUPABASE_KEY,
+            "apikey":
+              SUPABASE_KEY,
 
             "Authorization":
               "Bearer " + token
@@ -712,11 +851,6 @@ async function deleteNotification(Id) {
 
       const error =
         await response.text();
-
-      console.error(
-        "Delete error:",
-        error
-      );
 
       alert(
         "Delete नहीं हुआ:\n" +
@@ -732,14 +866,11 @@ async function deleteNotification(Id) {
     );
 
 
-    loadNotifications();
+    await loadNotifications();
 
   } catch (error) {
 
-    console.error(
-      "Delete error:",
-      error
-    );
+    console.error(error);
 
     alert(
       "Delete करने में समस्या हुई।"
@@ -749,7 +880,7 @@ async function deleteNotification(Id) {
 
 
 /* =========================
-   PAGE START
+   START
 ========================= */
 
 loadNotifications();
