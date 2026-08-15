@@ -1,12 +1,10 @@
-Ready-to-Paste "index.html"
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Information & Notification</title>
+  <title>Suchna Update</title>
 
   <style>
     * {
@@ -24,13 +22,13 @@ Ready-to-Paste "index.html"
       background: linear-gradient(135deg, #1769aa, #0d47a1);
       color: white;
       text-align: center;
-      padding: 30px 15px;
+      padding: 32px 15px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
 
     header h1 {
       margin: 0 0 8px;
-      font-size: 30px;
+      font-size: 32px;
     }
 
     header p {
@@ -111,7 +109,6 @@ Ready-to-Paste "index.html"
       margin-top: 12px;
     }
 
-    /* Admin area */
     #adminArea {
       margin-top: 35px;
       text-align: center;
@@ -178,7 +175,7 @@ Ready-to-Paste "index.html"
     @media (max-width: 600px) {
 
       header h1 {
-        font-size: 24px;
+        font-size: 26px;
       }
 
       .container {
@@ -209,7 +206,7 @@ Ready-to-Paste "index.html"
 <body>
 
 <header>
-  <h1>Information & Notification</h1>
+  <h1>Suchna Update</h1>
   <p>महत्वपूर्ण सूचना और जानकारी</p>
 </header>
 
@@ -231,7 +228,6 @@ Ready-to-Paste "index.html"
 
   <div id="adminArea">
 
-    <!-- Login button -->
     <div id="adminLoginBox">
 
       <button
@@ -244,7 +240,6 @@ Ready-to-Paste "index.html"
     </div>
 
 
-    <!-- Admin panel -->
     <div id="adminPanel">
 
       <h2>Admin Panel</h2>
@@ -313,7 +308,7 @@ const SUPABASE_KEY =
 
 
 /* =========================
-   CHECK ADMIN LOGIN
+   ADMIN UI
 ========================= */
 
 function updateAdminUI() {
@@ -326,6 +321,7 @@ function updateAdminUI() {
 
   const adminPanel =
     document.getElementById("adminPanel");
+
 
   if (token) {
 
@@ -354,6 +350,7 @@ async function loadNotifications() {
   box.innerHTML =
     '<div class="loading">सूचनाएँ लोड हो रही हैं...</div>';
 
+
   try {
 
     const response = await fetch(
@@ -370,30 +367,33 @@ async function loadNotifications() {
       }
     );
 
+
     const responseText =
       await response.text();
+
 
     if (!response.ok) {
       throw new Error(responseText);
     }
 
+
     const data =
       JSON.parse(responseText);
+
 
     if (!Array.isArray(data)) {
       throw new Error("Invalid data");
     }
 
+
     if (data.length === 0) {
 
       box.innerHTML =
-        "<p>अभी कोई सूचना उपलब्ध नहीं है।</p>";
+        "<p>अभी कोई सूचना उपलब्ध नहीं है।";
 
       return;
     }
 
-
-    /* Latest notification first */
 
     data.sort(function(a, b) {
 
@@ -417,7 +417,7 @@ async function loadNotifications() {
         "notification";
 
 
-      /* Title */
+      /* TITLE */
 
       const title =
         document.createElement("h3");
@@ -428,7 +428,7 @@ async function loadNotifications() {
       div.appendChild(title);
 
 
-      /* Description */
+      /* DESCRIPTION */
 
       if (item.description) {
 
@@ -442,7 +442,7 @@ async function loadNotifications() {
       }
 
 
-      /* Category */
+      /* CATEGORY */
 
       if (item.category) {
 
@@ -459,7 +459,7 @@ async function loadNotifications() {
       }
 
 
-      /* Image */
+      /* IMAGE */
 
       if (item.image_url) {
 
@@ -476,7 +476,7 @@ async function loadNotifications() {
       }
 
 
-      /* Content */
+      /* CONTENT */
 
       if (item.content) {
 
@@ -490,7 +490,7 @@ async function loadNotifications() {
       }
 
 
-      /* Date and time */
+      /* DATE */
 
       if (item.published_at) {
 
@@ -511,7 +511,7 @@ async function loadNotifications() {
       }
 
 
-      /* Delete button only for admin */
+      /* DELETE - ONLY ADMIN */
 
       if (
         localStorage.getItem("access_token")
@@ -545,6 +545,7 @@ async function loadNotifications() {
 
     });
 
+
   } catch (error) {
 
     console.error(
@@ -571,12 +572,14 @@ function login() {
     return;
   }
 
+
   const password =
     prompt("Password डालें:");
 
   if (!password) {
     return;
   }
+
 
   authenticate(
     email,
@@ -640,6 +643,7 @@ async function authenticate(
       data.access_token
     );
 
+
     localStorage.setItem(
       "refresh_token",
       data.refresh_token
@@ -655,6 +659,7 @@ async function authenticate(
 
 
     loadNotifications();
+
 
   } catch (error) {
 
@@ -846,6 +851,7 @@ async function addNotification() {
 
     await loadNotifications();
 
+
   } catch (error) {
 
     console.error(
@@ -935,6 +941,7 @@ async function deleteNotification(Id) {
 
     await loadNotifications();
 
+
   } catch (error) {
 
     console.error(
@@ -950,7 +957,7 @@ async function deleteNotification(Id) {
 
 
 /* =========================
-   START
+   START WEBSITE
 ========================= */
 
 updateAdminUI();
