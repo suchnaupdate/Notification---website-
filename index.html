@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Information & Notification</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,6 +36,35 @@
     .notification h3 {
       color: #1769aa;
     }
+
+    button {
+      background: #1769aa;
+      color: white;
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      margin: 7px 0 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #adminPanel {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 25px;
+    }
+
+    #addForm {
+      display: none;
+    }
   </style>
 </head>
 
@@ -46,8 +76,47 @@
 </header>
 
 <div class="container">
+
   <h2>Latest Notifications</h2>
-  <div id="notifications">सूचनाएँ लोड हो रही हैं...</div>
+
+  <div id="notifications">
+    सूचनाएँ लोड हो रही हैं...
+  </div>
+
+  <div id="adminPanel">
+    <h2>Admin</h2>
+
+    <button id="loginButton" onclick="login()">
+      Admin Login
+    </button>
+
+    <button id="logoutButton" onclick="logout()" style="display:none;">
+      Logout
+    </button>
+
+    <div id="addForm">
+
+      <h3>नई सूचना जोड़ें</h3>
+
+      <input id="title" type="text" placeholder="Title">
+
+      <textarea id="description" placeholder="Description"></textarea>
+
+      <input id="category" type="text" placeholder="Category">
+
+      <input id="image_url" type="text" placeholder="Image URL">
+
+      <textarea id="content" placeholder="Content"></textarea>
+
+      <button onclick="addNotification()">
+        सूचना जोड़ें
+      </button>
+
+      <p id="message"></p>
+
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -55,11 +124,14 @@ const SUPABASE_URL = "https://hduvjoammklsahiornxy.supabase.co";
 const SUPABASE_KEY = "sb_publishable_YJceciJHp6oMFjqTeAW9yQ_cSPRqyKB";
 
 async function loadNotifications() {
+
   const box = document.getElementById("notifications");
 
   try {
+
     const response = await fetch(
-      SUPABASE_URL + "/rest/v1/notifications?select=title,description,category,image_url",
+      SUPABASE_URL +
+      "/rest/v1/notifications?select=title,description,category,image_url,content,published_at&order=published_at.desc",
       {
         headers: {
           "apikey": SUPABASE_KEY,
@@ -75,30 +147,199 @@ async function loadNotifications() {
     const data = await response.json();
 
     if (data.length === 0) {
-      box.innerHTML = "<p>अभी कोई सूचना उपलब्ध नहीं है।</p>";
+      box.innerHTML =
+        "<p>अभी कोई सूचना उपलब्ध नहीं है।</p>";
       return;
     }
 
     box.innerHTML = "";
 
     data.forEach(item => {
+
       const div = document.createElement("div");
+
       div.className = "notification";
 
       div.innerHTML = `
         <h3>${item.title || ""}</h3>
         <p>${item.description || ""}</p>
         <small>${item.category || ""}</small>
+        ${
+          item.image_url
+          ? `<br><img src="${item.image_url}" style="max-width:100%;margin-top:10px;">`
+          : ""
+        }
+        ${
+          item.content
+          ? `<p>${item.content}</p>`
+          : ""
+        }
       `;
 
       box.appendChild(div);
+
     });
 
   } catch (error) {
+
     console.error(error);
-    box.innerHTML = "<p>सूचनाएँ लोड नहीं हो सकीं।</p>";
+
+    box.innerHTML =
+      "<p>सूचनाएँ लोड नहीं हो सकीं।</p>";
   }
 }
+
+
+function login() {
+
+  const email = prompt("Admin email डालें:");
+
+  if (!email) {
+    return;
+  }
+
+  const password = prompt("Password डालें:");
+
+  if (!password) {
+    return;
+  }
+
+  authenticate(email, password);
+}
+
+
+async function authenticate(email, password) {
+
+  const response = await fetch(
+    SUPABASE_URL + "/auth/v1/token?grant_type=password",
+    {
+      method: "POST",
+
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+
+    alert("Login नहीं हुआ: " + (data.error_description || "Invalid login"));
+
+    return;
+  }
+
+  localStorage.setItem(
+    "access_token",
+    data.access_token
+  );
+
+  localStorage.setItem(
+    "refresh_token",
+    data.refresh_token
+  );
+
+  document.getElementById("loginButton").style.display = "none";
+
+  document.getElementById("logoutButton").style.display = "inline-block";
+
+  document.getElementById("addForm").style.display = "block";
+
+  alert("Admin login सफल हुआ।");
+}
+
+
+function logout() {
+
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+
+  document.getElementById("loginButton").style.display = "inline-block";
+
+  document.getElementById("logoutButton").style.display = "none";
+
+  document.getElementById("addForm").style.display = "none";
+}
+
+
+async function addNotification() {
+
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    alert("पहले Admin Login करें।");
+    return;
+  }
+
+  const title =
+    document.getElementById("title").value;
+
+  const description =
+    document.getElementById("description").value;
+
+  const category =
+    document.getElementById("category").value;
+
+  const image_url =
+    document.getElementById("image_url").value;
+
+  const content =
+    document.getElementById("content").value;
+
+
+  const response = await fetch(
+    SUPABASE_URL + "/rest/v1/notifications",
+    {
+      method: "POST",
+
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+
+      body: JSON.stringify({
+        title: title,
+        description: description,
+        category: category,
+        image_url: image_url || null,
+        content: content,
+        published_at: new Date().toISOString()
+      })
+    }
+  );
+
+
+  if (!response.ok) {
+
+    const error = await response.text();
+
+    alert("सूचना जोड़ने में समस्या हुई:\n" + error);
+
+    return;
+  }
+
+
+  document.getElementById("message").innerText =
+    "सूचना सफलतापूर्वक जोड़ दी गई।";
+
+  document.getElementById("title").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("category").value = "";
+  document.getElementById("image_url").value = "";
+  document.getElementById("content").value = "";
+
+  loadNotifications();
+}
+
 
 loadNotifications();
 </script>
