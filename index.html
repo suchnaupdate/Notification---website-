@@ -1,3 +1,5 @@
+Ready-to-Paste "index.html"
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -109,11 +111,23 @@
       margin-top: 12px;
     }
 
+    /* Admin area */
+    #adminArea {
+      margin-top: 35px;
+      text-align: center;
+    }
+
+    #adminLoginBox {
+      display: inline-block;
+    }
+
     #adminPanel {
+      display: none;
       background: white;
       padding: 22px;
       border-radius: 12px;
-      margin-top: 30px;
+      margin-top: 15px;
+      text-align: left;
       box-shadow: 0 3px 12px rgba(0,0,0,0.08);
     }
 
@@ -123,7 +137,6 @@
     }
 
     #addForm {
-      display: none;
       margin-top: 20px;
     }
 
@@ -153,6 +166,15 @@
       text-align: center;
     }
 
+    .admin-login-button {
+      background: #1769aa;
+    }
+
+    .logout-button {
+      background: #555;
+      margin-left: 8px;
+    }
+
     @media (max-width: 600px) {
 
       header h1 {
@@ -175,6 +197,11 @@
       #adminPanel {
         padding: 17px;
       }
+
+      .logout-button {
+        margin-left: 0;
+        margin-top: 8px;
+      }
     }
   </style>
 </head>
@@ -186,9 +213,12 @@
   <p>महत्वपूर्ण सूचना और जानकारी</p>
 </header>
 
+
 <div class="container">
 
-  <h2 class="section-title">Latest Notifications</h2>
+  <h2 class="section-title">
+    Latest Notifications
+  </h2>
 
   <div id="notifications">
     <div class="loading">
@@ -197,61 +227,74 @@
   </div>
 
 
-  <!-- ADMIN PANEL -->
+  <!-- ADMIN AREA -->
 
-  <div id="adminPanel">
+  <div id="adminArea">
 
-    <h2>Admin</h2>
+    <!-- Login button -->
+    <div id="adminLoginBox">
 
-    <button id="loginButton" onclick="login()">
-      Admin Login
-    </button>
-
-    <button
-      id="logoutButton"
-      onclick="logout()"
-      style="display:none;">
-      Logout
-    </button>
-
-
-    <div id="addForm">
-
-      <h3>नई सूचना जोड़ें</h3>
-
-      <input
-        id="title"
-        type="text"
-        placeholder="Title"
-      >
-
-      <textarea
-        id="description"
-        placeholder="Description"
-      ></textarea>
-
-      <input
-        id="category"
-        type="text"
-        placeholder="Category"
-      >
-
-      <input
-        id="image_url"
-        type="text"
-        placeholder="Image URL (optional)"
-      >
-
-      <textarea
-        id="content"
-        placeholder="Content"
-      ></textarea>
-
-      <button onclick="addNotification()">
-        सूचना जोड़ें
+      <button
+        class="admin-login-button"
+        id="loginButton"
+        onclick="login()">
+        🔐 Admin Login
       </button>
 
-      <p id="message"></p>
+    </div>
+
+
+    <!-- Admin panel -->
+    <div id="adminPanel">
+
+      <h2>Admin Panel</h2>
+
+      <button
+        class="logout-button"
+        onclick="logout()">
+        Logout
+      </button>
+
+
+      <div id="addForm">
+
+        <h3>नई सूचना जोड़ें</h3>
+
+        <input
+          id="title"
+          type="text"
+          placeholder="Title"
+        >
+
+        <textarea
+          id="description"
+          placeholder="Description"
+        ></textarea>
+
+        <input
+          id="category"
+          type="text"
+          placeholder="Category"
+        >
+
+        <input
+          id="image_url"
+          type="text"
+          placeholder="Image URL (optional)"
+        >
+
+        <textarea
+          id="content"
+          placeholder="Content"
+        ></textarea>
+
+        <button onclick="addNotification()">
+          सूचना जोड़ें
+        </button>
+
+        <p id="message"></p>
+
+      </div>
 
     </div>
 
@@ -267,6 +310,36 @@ const SUPABASE_URL =
 
 const SUPABASE_KEY =
   "sb_publishable_YJceciJHp6oMFjqTeAW9yQ_cSPRqyKB";
+
+
+/* =========================
+   CHECK ADMIN LOGIN
+========================= */
+
+function updateAdminUI() {
+
+  const token =
+    localStorage.getItem("access_token");
+
+  const loginBox =
+    document.getElementById("adminLoginBox");
+
+  const adminPanel =
+    document.getElementById("adminPanel");
+
+  if (token) {
+
+    loginBox.style.display = "none";
+
+    adminPanel.style.display = "block";
+
+  } else {
+
+    loginBox.style.display = "block";
+
+    adminPanel.style.display = "none";
+  }
+}
 
 
 /* =========================
@@ -344,6 +417,8 @@ async function loadNotifications() {
         "notification";
 
 
+      /* Title */
+
       const title =
         document.createElement("h3");
 
@@ -352,6 +427,8 @@ async function loadNotifications() {
 
       div.appendChild(title);
 
+
+      /* Description */
 
       if (item.description) {
 
@@ -364,6 +441,8 @@ async function loadNotifications() {
         div.appendChild(description);
       }
 
+
+      /* Category */
 
       if (item.category) {
 
@@ -380,6 +459,8 @@ async function loadNotifications() {
       }
 
 
+      /* Image */
+
       if (item.image_url) {
 
         const image =
@@ -395,6 +476,8 @@ async function loadNotifications() {
       }
 
 
+      /* Content */
+
       if (item.content) {
 
         const content =
@@ -406,6 +489,8 @@ async function loadNotifications() {
         div.appendChild(content);
       }
 
+
+      /* Date and time */
 
       if (item.published_at) {
 
@@ -426,7 +511,7 @@ async function loadNotifications() {
       }
 
 
-      /* DELETE BUTTON */
+      /* Delete button only for admin */
 
       if (
         localStorage.getItem("access_token")
@@ -530,6 +615,7 @@ async function authenticate(
       }
     );
 
+
     const data =
       await response.json();
 
@@ -560,19 +646,7 @@ async function authenticate(
     );
 
 
-    document.getElementById(
-      "loginButton"
-    ).style.display = "none";
-
-
-    document.getElementById(
-      "logoutButton"
-    ).style.display = "inline-block";
-
-
-    document.getElementById(
-      "addForm"
-    ).style.display = "block";
+    updateAdminUI();
 
 
     alert(
@@ -584,7 +658,10 @@ async function authenticate(
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Login error:",
+      error
+    );
 
     alert(
       "Login में समस्या हुई।"
@@ -608,22 +685,7 @@ function logout() {
   );
 
 
-  document.getElementById(
-    "loginButton"
-  ).style.display =
-    "inline-block";
-
-
-  document.getElementById(
-    "logoutButton"
-  ).style.display =
-    "none";
-
-
-  document.getElementById(
-    "addForm"
-  ).style.display =
-    "none";
+  updateAdminUI();
 
 
   loadNotifications();
@@ -702,6 +764,7 @@ async function addNotification() {
           method: "POST",
 
           headers: {
+
             "apikey":
               SUPABASE_KEY,
 
@@ -785,7 +848,10 @@ async function addNotification() {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Add notification error:",
+      error
+    );
 
     alert(
       "सूचना जोड़ने में समस्या हुई।"
@@ -837,6 +903,7 @@ async function deleteNotification(Id) {
           method: "DELETE",
 
           headers: {
+
             "apikey":
               SUPABASE_KEY,
 
@@ -870,7 +937,10 @@ async function deleteNotification(Id) {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Delete error:",
+      error
+    );
 
     alert(
       "Delete करने में समस्या हुई।"
@@ -882,6 +952,8 @@ async function deleteNotification(Id) {
 /* =========================
    START
 ========================= */
+
+updateAdminUI();
 
 loadNotifications();
 
