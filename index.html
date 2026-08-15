@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Information & Notification</title>
 
   <style>
@@ -48,10 +47,6 @@
       border-radius: 6px;
       cursor: pointer;
       margin-top: 5px;
-    }
-
-    button:hover {
-      opacity: 0.9;
     }
 
     input,
@@ -204,7 +199,6 @@ async function loadNotifications() {
     );
 
     if (!response.ok) {
-
       throw new Error(
         "Supabase Error: " +
         responseText
@@ -215,7 +209,6 @@ async function loadNotifications() {
       JSON.parse(responseText);
 
     if (!Array.isArray(data)) {
-
       throw new Error(
         "Invalid notification data"
       );
@@ -240,9 +233,7 @@ async function loadNotifications() {
 
     });
 
-
     box.innerHTML = "";
-
 
     data.forEach(function(item) {
 
@@ -251,7 +242,6 @@ async function loadNotifications() {
 
       div.className =
         "notification";
-
 
       div.innerHTML = `
 
@@ -300,16 +290,13 @@ async function loadNotifications() {
 
       `;
 
-
       box.appendChild(div);
 
 
-      /* Delete button for logged-in admin */
+      /* Delete button for admin */
 
       if (
-        localStorage.getItem(
-          "access_token"
-        )
+        localStorage.getItem("access_token")
       ) {
 
         const deleteButton =
@@ -324,16 +311,14 @@ async function loadNotifications() {
         deleteButton.style.marginTop =
           "10px";
 
-
         deleteButton.onclick =
           function() {
 
             deleteNotification(
-              item.id
+              item.Id
             );
 
           };
-
 
         div.appendChild(
           deleteButton
@@ -341,7 +326,6 @@ async function loadNotifications() {
       }
 
     });
-
 
   } catch (error) {
 
@@ -419,10 +403,8 @@ async function authenticate(
       }
     );
 
-
     const data =
       await response.json();
-
 
     if (!response.ok) {
 
@@ -438,38 +420,31 @@ async function authenticate(
       return;
     }
 
-
     localStorage.setItem(
       "access_token",
       data.access_token
     );
-
 
     localStorage.setItem(
       "refresh_token",
       data.refresh_token
     );
 
-
     document.getElementById(
       "loginButton"
     ).style.display = "none";
-
 
     document.getElementById(
       "logoutButton"
     ).style.display = "inline-block";
 
-
     document.getElementById(
       "addForm"
     ).style.display = "block";
 
-
     alert(
       "Admin login सफल हुआ।"
     );
-
 
     loadNotifications();
 
@@ -501,21 +476,17 @@ function logout() {
     "refresh_token"
   );
 
-
   document.getElementById(
     "loginButton"
   ).style.display = "inline-block";
-
 
   document.getElementById(
     "logoutButton"
   ).style.display = "none";
 
-
   document.getElementById(
     "addForm"
   ).style.display = "none";
-
 
   loadNotifications();
 }
@@ -532,7 +503,6 @@ async function addNotification() {
       "access_token"
     );
 
-
   if (!token) {
 
     alert(
@@ -542,30 +512,25 @@ async function addNotification() {
     return;
   }
 
-
   const title =
     document.getElementById(
       "title"
     ).value.trim();
-
 
   const description =
     document.getElementById(
       "description"
     ).value.trim();
 
-
   const category =
     document.getElementById(
       "category"
     ).value.trim();
 
-
   const image_url =
     document.getElementById(
       "image_url"
     ).value.trim();
-
 
   const content =
     document.getElementById(
@@ -658,21 +623,17 @@ async function addNotification() {
       "title"
     ).value = "";
 
-
     document.getElementById(
       "description"
     ).value = "";
-
 
     document.getElementById(
       "category"
     ).value = "";
 
-
     document.getElementById(
       "image_url"
     ).value = "";
-
 
     document.getElementById(
       "content"
@@ -699,7 +660,7 @@ async function addNotification() {
    DELETE NOTIFICATION
 ========================= */
 
-async function deleteNotification(id) {
+async function deleteNotification(Id) {
 
   const token =
     localStorage.getItem(
@@ -732,8 +693,8 @@ async function deleteNotification(id) {
     const response =
       await fetch(
         SUPABASE_URL +
-        "/rest/v1/notifications?id=eq." +
-        encodeURIComponent(id),
+        "/rest/v1/notifications?Id=eq." +
+        encodeURIComponent(Id),
         {
           method: "DELETE",
 
